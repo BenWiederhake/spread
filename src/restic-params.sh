@@ -11,8 +11,8 @@ export RESTIC_PASSWORD="1234"  # FIXME
 
 export RESTIC_CONFIG_DIR="${HOME}/.config/restic-run-backup"
 
-# '1000' would mean that from a repository of size 30G, restic-run-backup
-# verifies about 30M after each successful backup.  Note that some metadata
+# '10000' would mean that from a repository of size 30G, restic-run-backup
+# verifies about 3M after each successful backup.  Note that some metadata
 # is always read and verified.
 export RESTIC_READ_SUBSET_FRACTION=10000
 
