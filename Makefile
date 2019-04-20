@@ -21,7 +21,7 @@ export-all: export-static export-templates
 
 export-static: .i-want-to-deploy-it-on-this-account
 	@echo "Note that you also need ~/bin on your \$$PATH"
-	install -D -t "${HOME}/bin src/restic-check-age src/restic-heimdal src/restic-last-backup src/restic-run-backup"
+	install -D -t "${HOME}/bin" src/restic-check-age src/restic-heimdal src/restic-last-backup src/restic-run-backup
 
 export-templates: .i-want-to-deploy-it-on-this-account
 	# FIXME: restic-params.sh.  MUST REPLACE "export RESTIC_CONFIG_DIR"
