@@ -24,14 +24,14 @@ export-static: .i-want-to-deploy-it-on-this-account
 	install -D -t "${HOME}/bin" src/restic-check-age src/restic-heimdal src/restic-last-backup src/restic-run-backup
 
 export-templates: .i-want-to-deploy-it-on-this-account
-	# FIXME: restic-params.sh.  MUST REPLACE "export RESTIC_CONFIG_DIR"
+	# FIXME: params  MUST REPLACE "export RESTIC_CONFIG_DIR"
 	# FIXME: known_hosts
-	# FIXME: restic-ignore.lst
+	# FIXME: exclude.lst
 	@echo "Not implemented."
 	@exit 1
 
 import:
 	@echo "Not importing \$${HOME}/.ssh/known_hosts"
-	@echo "Not importing \$${RESTIC_CONFIG_DIR}/.ssh/restic-ignore.lst"
-	@echo "Not importing \$${HOME}/.ssh/restic-params.sh"
+	@echo "Not importing \$${RESTIC_CONFIG_DIR}/.ssh/exclude.lst"
+	@echo "Not importing \$${HOME}/.ssh/params"
 	cp -t src/ ~/bin/restic-check-age ~/bin/restic-heimdal ~/bin/restic-last-backup ~/bin/restic-run-backup

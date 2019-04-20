@@ -15,4 +15,6 @@ set -e
 # mkdir mnt-here && restic-heimdal mount mnt-here
 # sudo restic-heimdal generate --bash-completion /usr/share/bash-completion/completions/restic
 
+export RESTIC_REPOSITORY
+export RESTIC_PASSWORD
 exec restic "$@"
