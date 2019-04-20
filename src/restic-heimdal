@@ -2,18 +2,29 @@
 
 set -e
 
-. ~/.ssh/restic-params.sh
-
 # Nice commands to start with:
-# restic-heimdal init
-# restic-heimdal snapshots
-# restic-heimdal check --read-data
-# restic-heimdal restore 79766175 --target /tmp/restore-work --include /work/foo
+# restic-heimdal default init
+# restic-heimdal default snapshots
+# restic-heimdal default check --read-data
+# restic-heimdal default restore 79766175 --target /tmp/restore-work --include /work/foo
 
 # And later:
-# restic-heimdal forget --dry-run --prune --keep-last 10 --keep-hourly 25 --keep-daily 8 --keep-weekly 6 --keep-monthly 13 --keep-yearly 50
-# mkdir mnt-here && restic-heimdal mount mnt-here
-# sudo restic-heimdal generate --bash-completion /usr/share/bash-completion/completions/restic
+# restic-heimdal default forget --dry-run --prune --keep-last 10 --keep-hourly 25 --keep-daily 8 --keep-weekly 6 --keep-monthly 13 --keep-yearly 50
+# mkdir mnt-here && restic-heimdal default mount mnt-here
+# sudo restic-heimdal default generate --bash-completion /usr/share/bash-completion/completions/restic
+
+
+# == Parse config ==
+
+if [ $# -ne 1 ] ; then echo "Must supply profile, e.g. 'default'" ; fi
+PROFILE_NAME="$1"
+shift
+RESTIC_CONFIG_DIR="${HOME}/.config/restic-run-backup/${PROFILE_NAME}/"
+if [ ! -d "${RESTIC_CONFIG_DIR}" ] ; then echo "No such profile \"${PROFILE_NAME}\"." ; exit 1 ; fi
+. "${RESTIC_CONFIG_DIR}/params"
+
+
+# == Do stuff ==
 
 export RESTIC_REPOSITORY
 export RESTIC_PASSWORD

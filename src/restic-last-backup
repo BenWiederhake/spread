@@ -2,7 +2,17 @@
 
 set -e
 
-. ~/.ssh/restic-params.sh
+# == Parse config ==
+
+if [ $# -ne 1 ] ; then echo "Must supply profile, e.g. 'default'" ; fi
+PROFILE_NAME="$1"
+shift
+RESTIC_CONFIG_DIR="${HOME}/.config/restic-run-backup/${PROFILE_NAME}/"
+if [ ! -d "${RESTIC_CONFIG_DIR}" ] ; then echo "No such profile \"${PROFILE_NAME}\"." ; exit 1 ; fi
+. "${RESTIC_CONFIG_DIR}/params"
+
+
+# == Do stuff ==
 
 if [ -r "${RESTIC_CONFIG_DIR}/last-success.stamp" ]
 then
