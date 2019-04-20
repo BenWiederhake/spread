@@ -1,0 +1,9 @@
+# List of paths that shall be backed up.
+# Anything inside that matches exclude.lst will not be included.
+
+# Can be both directories and files:
+/dev/null
+# Nonexistant files/dirs cause a warning:
+/home/user/My Documents/
+# Paths with newlines in them are probably impossible to handle.
+# The configuration folder will be included automatically.

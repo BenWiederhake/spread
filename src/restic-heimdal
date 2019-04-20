@@ -2,7 +2,7 @@
 
 set -e
 
-. ~/.ssh/restic-params.sh  # Depends on your deployment
+. ~/.ssh/restic-params.sh
 
 # Nice commands to start with:
 # restic-heimdal init
