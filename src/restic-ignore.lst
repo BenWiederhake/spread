@@ -1,0 +1,8 @@
+# This has a .gitignore-like syntax.
+# In contrast to .gitignore, only the files specified on the
+# command-line of restic are respected, and then they apply globally.
+# See https://restic.readthedocs.io/en/stable/040_backup.html#including-and-excluding-files.
+
+# /path/rooted/in/the/arguments
+# trailing/slashes/are/ignored/
+# double-asterisks/**/match-any-path

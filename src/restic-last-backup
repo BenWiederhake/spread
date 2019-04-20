@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+. ~/.ssh/restic-params.sh
+
+if [ -r "${RESTIC_CONFIG_DIR}/last-success.stamp" ]
+then
+    date -r "${RESTIC_CONFIG_DIR}/last-success.stamp"
+else
+    echo "Never"
+fi

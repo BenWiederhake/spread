@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -e
+
+. ~/.ssh/restic-params.sh  # Depends on your deployment
+
+# Nice commands to start with:
+# restic-heimdal init
+# restic-heimdal snapshots
+# restic-heimdal check --read-data
+# restic-heimdal restore 79766175 --target /tmp/restore-work --include /work/foo
+
+# And later:
+# restic-heimdal forget --dry-run --prune --keep-last 10 --keep-hourly 25 --keep-daily 8 --keep-weekly 6 --keep-monthly 13 --keep-yearly 50
+# mkdir mnt-here && restic-heimdal mount mnt-here
+# sudo restic-heimdal generate --bash-completion /usr/share/bash-completion/completions/restic
+
+exec restic "$@"

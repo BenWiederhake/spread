@@ -1,0 +1,30 @@
+#!/bin/sh
+
+set -e
+
+. ~/.ssh/restic-params.sh
+
+BACKUP_STAMP="${RESTIC_CONFIG_DIR}/last-success.stamp"
+COMPLAINT_STAMP="${RESTIC_CONFIG_DIR}/last-complaint.stamp"
+
+if [ ! -e "${COMPLAINT_STAMP}" ]
+then
+    touch -c -t 201001010000 "${COMPLAINT_STAMP}"
+fi
+
+if [ ! -f "${BACKUP_STAMP}" ]
+then
+    echo "Restic backup never ran!"
+    echo "Expected backup stamp at ${BACKUP_STAMP}"
+    echo "(Will complain again on next run.)"
+    exit 1
+fi
+
+if [ \( $(date +%s -r "${BACKUP_STAMP}" ) -lt $(date +%s --date="7 days ago") \) -a \
+     \( $(date +%s -r "${COMPLAINT_STAMP}" ) -lt $(date +%s --date="6 days ago") \) ]
+then
+    echo "Last restic backup is more than 7 days ago: $(date -r "${BACKUP_STAMP}" )"
+    echo "(Will complain again in 6 days)"
+    touch "${COMPLAINT_STAMP}"
+    exit 1
+fi
