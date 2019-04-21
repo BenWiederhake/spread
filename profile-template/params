@@ -17,4 +17,4 @@ RESTIC_READ_SUBSET_FRACTION=10000
 # Replace "restic-server" by whatever server you use.
 # For extra security, ask the server admin to provide an initial "known_hosts" file.
 RESTIC_ACCOUNT="backup-${RESTIC_REPOSITORY_USER}@restic-server"
-RESTIC_REPOSITORY="sftp://${RESTIC_ACCOUNT}:/writable/${RESTIC_REPOSITORY_NAME}"
+RESTIC_REPOSITORY="sftp://${RESTIC_ACCOUNT}/writable/${RESTIC_REPOSITORY_NAME}"
