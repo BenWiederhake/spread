@@ -1,0 +1,100 @@
+#!/bin/sh
+
+set -e
+
+
+# == Configuration ==
+
+if [ $# -ne 1 ] ; then echo "Must supply profile, e.g. 'default'" ; exit 1 ; fi
+PROFILE_NAME="$1"
+shift
+RESTIC_CONFIG_DIR="${HOME}/.config/restic-run/${PROFILE_NAME}"
+if [ ! -d "${RESTIC_CONFIG_DIR}" ] ; then echo "No such profile \"${PROFILE_NAME}\"." ; exit 1 ; fi
+. "${RESTIC_CONFIG_DIR}/params"
+
+#QUIET=""
+QUIET="-q"
+
+# restic 0.9.4 has a nasty bug where it outputs stuff anyway:
+# https://github.com/restic/restic/issues/2140
+# Also, a variable containing "> /dev/null" would not be interpreted
+# in the desired manner.
+#BACKUP_NEEDS_PIPE="y"
+BACKUP_NEEDS_PIPE="n"
+
+# If in doubt, this may help you fix space- and IFS-related issues:
+#CMD_PREFIX="python3	-c	'import sys; print(sys.argv)'"
+CMD_PREFIX=
+
+
+# == Create files as necessary ==
+
+if [ ! -d "${RESTIC_CONFIG_DIR}" ]
+then
+    mkdir -p "${RESTIC_CONFIG_DIR}"
+fi
+
+
+# == Check connectivity ==
+
+if ! timeout 10s sftp -b /dev/null ${RESTIC_ACCOUNT} 2> /dev/null
+then
+    # Hmm.  The machine appears to be offline, or have any other problem.
+    # If this happens too often, the watchdogs (on each machine) will notice
+    # that '.last_backup_success' hasn't been updated in a while,
+    # and send a warning mail.
+    exit 0
+fi
+
+
+# == Collect some nice extra data ==
+
+export RESTIC_REPOSITORY
+export RESTIC_PASSWORD
+restic snapshots "${QUIET}" --json > "${RESTIC_CONFIG_DIR}/previous-snapshots.json"
+
+if [ "${USER}" = "root" ]
+then
+    for sdx in $(find /dev -maxdepth 1 -name 'sd?' -printf '%f\n')
+    do
+        smartctl -x /dev/${sdx} > "${RESTIC_CONFIG_DIR}/smartctl-${sdx}"
+    done
+fi
+
+
+# == Do the backup ==
+
+if [ "${BACKUP_NEEDS_PIPE}" = "y" ]
+then
+    restic ${QUIET} --exclude-file "${RESTIC_CONFIG_DIR}/exclude.lst" backup --files-from "${RESTIC_CONFIG_DIR}/files-and-dirs.lst" "${RESTIC_CONFIG_DIR}" > /dev/null
+else
+    restic ${QUIET} --exclude-file "${RESTIC_CONFIG_DIR}/exclude.lst" backup --files-from "${RESTIC_CONFIG_DIR}/files-and-dirs.lst" "${RESTIC_CONFIG_DIR}"
+fi
+
+
+# == Verify consistency of the repository ==
+
+LAST_SUBSET="$(cat ${RESTIC_CONFIG_DIR}/last-subset.txt 2>/dev/null || true)"
+
+if [ "${LAST_SUBSET}" -ge 1 ] 2> /dev/null
+then
+    # Go to the next
+    NEXT_SUBSET="$(expr ${LAST_SUBSET} + 1)"
+    if [ "${NEXT_SUBSET}" -gt "${RESTIC_READ_SUBSET_FRACTION}" ]
+    then
+        NEXT_SUBSET=1
+    fi
+else
+    echo "${RESTIC_CONFIG_DIR}/last-subset.txt missing or did not exist."
+    echo "Initializing."
+    echo "999999999" > "${RESTIC_CONFIG_DIR}/last-subset.txt"
+    NEXT_SUBSET=1
+fi
+
+restic check ${QUIET} --read-data-subset="${NEXT_SUBSET}/${RESTIC_READ_SUBSET_FRACTION}"
+
+echo "${NEXT_SUBSET}" > "${RESTIC_CONFIG_DIR}/last-subset.txt"
+
+# == Un-press the dead man's switch ==
+
+touch "${RESTIC_CONFIG_DIR}/last-success.stamp"
