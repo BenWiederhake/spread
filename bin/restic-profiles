@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+CONFIG_PARENT_DIR="${HOME}/.config/restic-run"
+if [ ! -d "${CONFIG_PARENT_DIR}" ]
+then
+    echo "Profile directory does not exist."
+    exit 1
+fi
+
+ls -1 "${CONFIG_PARENT_DIR}"

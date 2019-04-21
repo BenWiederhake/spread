@@ -72,6 +72,10 @@ For example, here are my (future?) crontab entries:
 
 `$ restic-last-backup default`
 
+### Show which profiles exist
+
+`$ restic-profiles`
+
 ### Run normal restic commands
 
 Show snapshots:
@@ -83,24 +87,23 @@ Check integrity, read *all* data:
 Restore single file:
 `$ restic-heimdal default restore 79766175 --target /tmp/restore-work --include /work/foo`
 
-### Run advanced restic commands
+### Removing old snapshots
 
-Remove old snapshots. `--dry-run` is only there to prevent over-eager copy-pasting.  Leave it out to actually remove snapshots:
+`--dry-run` is only there to prevent over-eager copy-pasting.  Leave it out to actually remove snapshots:
 `$ restic-heimdal default forget --dry-run --prune --group-by host,tags --keep-last 10 --keep-hourly 25 --keep-daily 8 --keep-weekly 6 --keep-monthly 13 --keep-yearly 50`
+
+`forget` by default groups snapshots by their set of paths, and does not consider paths to be the main thing.  Example: I make three snapshots, of A, A&B, and only A again.  So the second snapshot had two paths.  Then `forget` considers the A&B snapshot to be something completely different than the A snapshots.  So `forget --keep-last 2` would do nothing, because it tries to keep the last two A-only snapshots, and it tries to keep the last 2 A&B snapshots.  This could cause trouble if the list of backed-up files changes slightly.  To get around this, use `forget` with the options `--group-by host,tags` or just `--group-by host`.
+
+Note that this may take a long time, and may rewrite a lot of the repository.
+You better have a stable, fast connection, and enough storage space.
+
+### Run advanced restic commands
 
 Mount snapshots for easier inspection and restoration:
 `$ mkdir mnt-here && restic-heimdal default mount mnt-here`
 
 Many other niceties:
 `$ restic help`
-
-### Caveats
-
-#### `forget` has weird semantics
-
-`forget` by default groups snapshots by their set of paths, and does not consider paths to be the main thing.  Example: I make three snapshots, of A, A&B, and only A again.  So the second snapshot had two paths.  Then `forget` considers the A&B snapshot to be something completely different than the A snapshots.  So `forget --keep-last 2` would do nothing, because it tries to keep the last two A-only snapshots, and it tries to keep the last 2 A&B snapshots.  This could cause trouble if the list of backed-up files changes slightly.  To get around this,
-
-To get around this, use `forget` with the options `--group-by host,tags` or just `--group-by host`.
 
 ## How to make a new server
 
