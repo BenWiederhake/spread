@@ -4,7 +4,7 @@
 RESTIC_REPOSITORY_USER="fool"  # FIXME
 
 # Will be part of a filesystem path, so don't go crazy.
-RESTIC_REPOSITORY_NAME="main"
+RESTIC_REPOSITORY_NAME="your_repository_name_here"
 
 # The password.
 RESTIC_PASSWORD="1234"  # FIXME
