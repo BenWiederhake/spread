@@ -7,7 +7,7 @@ set -e
 if [ $# -ne 1 ] ; then echo "Must supply profile, e.g. 'default'" ; fi
 PROFILE_NAME="$1"
 shift
-RESTIC_CONFIG_DIR="${HOME}/.config/restic-run-backup/${PROFILE_NAME}/"
+RESTIC_CONFIG_DIR="${HOME}/.config/restic-run/${PROFILE_NAME}"
 if [ ! -d "${RESTIC_CONFIG_DIR}" ] ; then echo "No such profile \"${PROFILE_NAME}\"." ; exit 1 ; fi
 . "${RESTIC_CONFIG_DIR}/params"
 

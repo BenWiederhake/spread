@@ -9,21 +9,16 @@ all:
 	@echo "Alternatively, copy the files by hand."
 	@exit 1
 
-.i-want-to-deploy-it-on-this-account:
-	@echo "Do you really want to deploy it for this account?"
-	@echo "Call 'touch' on the file, then."
-	@exit 1
-
 say:
 	true "DESTDIR is ${DESTDIR}, jo."
 
 export-all: export-static export-templates
 
-export-static: .i-want-to-deploy-it-on-this-account
+export-static:
 	@echo "Note that you also need ~/bin on your \$$PATH"
 	install -D -t "${HOME}/bin" src/restic-check-age src/restic-heimdal src/restic-last-backup src/restic-run-backup
 
-export-templates: .i-want-to-deploy-it-on-this-account
+export-templates:
 	# FIXME: params  MUST REPLACE "export RESTIC_CONFIG_DIR"
 	# FIXME: known_hosts
 	# FIXME: exclude.lst
