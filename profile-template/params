@@ -18,3 +18,8 @@ RESTIC_READ_SUBSET_FRACTION=10000
 # For extra security, ask the server admin to provide an initial "known_hosts" file.
 RESTIC_ACCOUNT="backup-${RESTIC_REPOSITORY_USER}@restic-server"
 RESTIC_REPOSITORY="sftp://${RESTIC_ACCOUNT}/writable/${RESTIC_REPOSITORY_NAME}"
+
+# Specify a tag for this backup.
+# No support for spaces.
+#RESTIC_USE_TAG=
+RESTIC_USE_TAG=sn-your_repository_name_here

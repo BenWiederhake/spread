@@ -30,6 +30,12 @@ fi
 #CMD_PREFIX='showargs'
 CMD_PREFIX=
 
+TAG_ARGS=""
+if [ -n "${RESTIC_USE_TAG}" ]
+then
+    TAG_ARGS="--tag ${RESTIC_USE_TAG}"
+fi
+
 
 # == Create files as necessary ==
 
@@ -70,9 +76,9 @@ fi
 
 if [ "${BACKUP_NEEDS_PIPE}" = "y" ]
 then
-    ${CMD_PREFIX} restic ${QUIET} --exclude-file "${RESTIC_CONFIG_DIR}/exclude.lst" backup --files-from "${RESTIC_CONFIG_DIR}/files-and-dirs.lst" "${RESTIC_CONFIG_DIR}" > /dev/null
+    ${CMD_PREFIX} restic ${QUIET} --exclude-file "${RESTIC_CONFIG_DIR}/exclude.lst" backup ${TAG_ARGS} --files-from "${RESTIC_CONFIG_DIR}/files-and-dirs.lst" "${RESTIC_CONFIG_DIR}" > /dev/null
 else
-    ${CMD_PREFIX} restic ${QUIET} --exclude-file "${RESTIC_CONFIG_DIR}/exclude.lst" backup --files-from "${RESTIC_CONFIG_DIR}/files-and-dirs.lst" "${RESTIC_CONFIG_DIR}"
+    ${CMD_PREFIX} restic ${QUIET} --exclude-file "${RESTIC_CONFIG_DIR}/exclude.lst" backup ${TAG_ARGS} --files-from "${RESTIC_CONFIG_DIR}/files-and-dirs.lst" "${RESTIC_CONFIG_DIR}"
 fi
 
 
@@ -101,6 +107,7 @@ if [ -z "${CMD_PREFIX}" ]
 then
     echo "${NEXT_SUBSET}" > "${RESTIC_CONFIG_DIR}/last-subset.txt"
 fi
+
 
 # == Un-press the dead man's switch ==
 
