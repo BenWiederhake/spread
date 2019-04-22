@@ -66,6 +66,33 @@ This way, the password is only stored in a single, user-only readable location, 
 
 `$ restic-heimdal default init`
 
+### Not overwhelming your server
+
+Pointing restic to an extremely large directory is scary, if the server space is limited, and you're not sure whether the exception list is reasonable.  I'm going to run with the example of my home directory.
+
+So here's how I go about it:
+
+1. Tell restic to backup your entire: `realpath "${HOME}" >> files-and-dirs.lst`
+2. Except everything in it: `find "$(realpath "${HOME}")" -mindepth 1 -maxdepth 1 -type d ! -name '.config' -printf '%p\n' >> exclude.lst`
+3. Run a backup to see whether it really only backed up small files at your home root and the configuration: `restic-run-backup default`
+4. Successively examine folders and remove them from `exclude.lst`
+
+This way you avoid starting with a single incredibly large backup that then needs to pared down again because whoops there was a 5GiB cache/log/thumbnails/whatever.
+
+Also, this gives you a pretty good idea of what directories are going to be really large, which you can then use to improve atomicity:
+
+### Atomicity
+
+File access isn't atomic system-wide, and although restic runs in single-digit seconds,
+that's still plenty of time to make a filesystem race likely.
+
+Personally, I deal with this using the "profile" concept:
+- The "default" profile to cover most of my home directory, specifically all the small (< 2 GiB), fast-changing stuff like my workspace, browser settings, mails; and:
+- The "large" profile to cover the rest of my home directory, specifically all the large, slow-changing stuff like music, camera folder, data collections.
+
+This way, the "default" profile runs in a rather fast, near-atomic fashion, and I can probably deal with the fallout easily.
+Most importantly, rescanning the large stuff can be done separately at a different time.
+
 ### Things that should go on your crontab
 
 Make a backup, if the server is up: `restic-run-backup default`
@@ -132,7 +159,7 @@ I'm using an RPi with the sshd options `ChrootDirectory /path/to/that/drive` and
 
 - The password is moved via environment variables.  Don't go too crazy on the special characters.
 - Restore-Verification can only be done by the client, as it requires the password.  This has the unfortunate effect that `RESTIC_READ_SUBSET_FRACTION` needs to be large (so, technically, represent a small fraction of the repository).
-- If the client fails to even run `restic-check-age` at all, the user might not notice.  On the other hand, in that case the device is probably crashed and burned anyway.
+- If the client fails to even start `restic-check-age` at all, the user might not notice.  On the other hand, in that case the device is probably crashed and burned anyway.
 
 ## TODOs
 
