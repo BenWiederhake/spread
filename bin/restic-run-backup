@@ -55,7 +55,7 @@ fi
 
 export RESTIC_REPOSITORY
 export RESTIC_PASSWORD
-${CMD_PREFIX} restic snapshots "${QUIET}" --json > "${RESTIC_CONFIG_DIR}/previous-snapshots.json"
+${CMD_PREFIX} restic snapshots ${QUIET} --json > "${RESTIC_CONFIG_DIR}/previous-snapshots.json"
 
 if [ "${USER}" = "root" ]
 then
