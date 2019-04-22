@@ -12,15 +12,18 @@ RESTIC_CONFIG_DIR="${HOME}/.config/restic-run/${PROFILE_NAME}"
 if [ ! -d "${RESTIC_CONFIG_DIR}" ] ; then echo "No such profile \"${PROFILE_NAME}\"." ; exit 1 ; fi
 . "${RESTIC_CONFIG_DIR}/params"
 
-#QUIET=""
 QUIET="-q"
-
 # restic 0.9.4 has a nasty bug where it outputs stuff anyway:
 # https://github.com/restic/restic/issues/2140
 # Also, a variable containing "> /dev/null" would not be interpreted
 # in the desired manner.
-#BACKUP_NEEDS_PIPE="y"
-BACKUP_NEEDS_PIPE="n"
+BACKUP_NEEDS_PIPE="y"
+
+if [ -n "${VERBOSE}" ]
+then
+    QUIET=""
+    BACKUP_NEEDS_PIPE="n"
+fi
 
 # If in doubt, this may help you fix space- and IFS-related issues:
 # echo $'#!/usr/bin/env python3\nimport sys\nprint(sys.argv)' > ~/bin/showargs
