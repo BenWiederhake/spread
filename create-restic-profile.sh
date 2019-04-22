@@ -15,8 +15,8 @@ fi
 
 cp -a profile-template/ "${RESTIC_CONFIG_DIR}"
 
-chmod go-rx "${RESTIC_CONFIG_DIR}"
-chmod go-r "${RESTIC_CONFIG_DIR}/params"
+chmod go-rwx "${RESTIC_CONFIG_DIR}"
+chmod go-rwx "${RESTIC_CONFIG_DIR}/params"
 sed -i -e "s<your_repository_name_here<$PROFILE_NAME<" "${RESTIC_CONFIG_DIR}/params"
 
 echo "Success.  You can now put your details into ${RESTIC_CONFIG_DIR}/params"
