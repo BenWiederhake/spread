@@ -34,6 +34,16 @@ So there's that.
 
 ## Install
 
+### Dependencies
+
+You need to install restic in one way or another.  See their [installation page](https://restic.readthedocs.io/en/stable/020_installation.html).
+
+`restic-run` uses `sftp` to test connectivity.
+
+I highly recommend `lftp` to do such things as determine repository size, delete snapshots, etc.  However, it's not strictly necessary.
+
+### `restic-run` itself
+
 You don't need to copy the binaries, and can just use them from your git clone.
 However, you may find it convenient to copy the content of `bin/` to somewhere on your `$PATH`.
 Maybe `/usr/local/bin/`, maybe `~/bin/`, whatever you like.
