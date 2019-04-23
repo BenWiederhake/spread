@@ -13,7 +13,14 @@ then
     exit 1
 fi
 
-cp -a profile-template/ "${RESTIC_CONFIG_DIR}"
+mkdir -p "${RESTIC_CONFIG_DIR}"
+# "/." is special cp semantic, not documented anywhere.
+cp -a profile-template/. "${RESTIC_CONFIG_DIR}"
+if [ -d "${RESTIC_CONFIG_DIR}/profile-template" ]
+then
+    echo "Copy failed.  Your implementation of 'cp' is weird."
+    exit 1
+fi
 
 chmod go-rwx "${RESTIC_CONFIG_DIR}"
 chmod go-rwx "${RESTIC_CONFIG_DIR}/params"
