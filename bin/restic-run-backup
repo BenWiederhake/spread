@@ -67,7 +67,7 @@ if [ "${USER}" = "root" ]
 then
     for sdx in $(find /dev -maxdepth 1 -name 'sd?' -printf '%f\n')
     do
-        smartctl -x /dev/${sdx} > "${RESTIC_CONFIG_DIR}/smartctl-${sdx}"
+        smartctl -a /dev/${sdx} > "${RESTIC_CONFIG_DIR}/smartctl-${sdx}"
     done
 fi
 
