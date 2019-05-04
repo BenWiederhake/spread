@@ -1,0 +1,30 @@
+#!/bin/sh
+
+set -e
+
+# == Parse config ==
+
+if [ $# -ne 1 -a $# -ne 2 ] ; then echo "Must supply profile, e.g. 'default'" ; exit 1 ; fi
+PROFILE_NAME="$1"
+RESTIC_CONFIG_DIR="${HOME}/.config/restic-run/${PROFILE_NAME}"
+if [ ! -d "${RESTIC_CONFIG_DIR}" ] ; then echo "No such profile \"${PROFILE_NAME}\"." ; exit 1 ; fi
+. "${RESTIC_CONFIG_DIR}/params"
+
+DRY_RUN_OPTION="--dry-run"
+if [ "$2" = "--no-dry-run" ]
+then
+    echo "DANGER: Actually removing stuff."
+    DRY_RUN_OPTION=""
+elif [ "$2" != "" ]
+then
+    # Huh
+    echo "Second argument must be either '--no-dry-run' or nothing at all!"
+    exit 1
+fi
+
+
+# == Do stuff ==
+
+export RESTIC_REPOSITORY
+export RESTIC_PASSWORD
+restic forget ${DRY_RUN_OPTION} ${RESTIC_FORGET_OPTIONS}
