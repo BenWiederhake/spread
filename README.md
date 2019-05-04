@@ -160,12 +160,16 @@ I'm using an RPi with the sshd options `ChrootDirectory /path/to/that/drive` and
 
 - restic uses a LUKS-like distinction between Master Key and Key Slot.  This means that you can change the password without having to rewrite the entire repository.  It also means that if keyslot *and* password are leaked, an adversary can recover all snapshots – duh.  The unintuitive part is that this can happen in any order: If the attacker can first obtain the keyslot (i.e., `keys/81270d89846052b906f10a24fa14f9bbb8d2e98f18b9732d56f8dfa8e026aa0f`), and months later the password to it, then the attacker can decrypt the entire repository, *even* if the user tries to revoke the key.  So, keep your password safe.
 - No built-in redundancy.  A bit flip on the server in a block that is still in use could potentially destroy a large chunk of the backup.
+- `check` seems to use a lot of round trips instead of using the cache.
 
 ### Ehh, whatever
 
+- There is no way to easily figure out which files are "most responsible" for snapshot size, and what the snapshot size is anyway.  However, this is displayed immediately after a backup, so this information should be recoverable somehow.
+- There is no way to delete an entire repository.  However, `lftp` supports `rm -rf`, which has the same effect.
 - The password is moved via environment variables.  Don't go too crazy on the special characters.
 - Restore-Verification can only be done by the client, as it requires the password.  This has the unfortunate effect that `RESTIC_READ_SUBSET_FRACTION` needs to be large (so, technically, represent a small fraction of the repository).
-- If the client fails to even start `restic-check-age` at all, the user might not notice.  On the other hand, in that case the device is probably crashed and burned anyway.
+- If the client completely fails to start `restic-check-age` at all, the user might not notice.  On the other hand, in that case the device is probably crashed and burned anyway.
+- `init` does not automatically run sanity checks on the password.
 
 ## TODOs
 
