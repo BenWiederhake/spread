@@ -2,6 +2,7 @@
 
 set -e
 
+
 # == Parse config ==
 
 if [ $# -ne 1 ] ; then echo "Must supply profile, e.g. 'default'" ; exit 1 ; fi
@@ -19,7 +20,7 @@ COMPLAINT_STAMP="${RESTIC_CONFIG_DIR}/last-complaint.stamp"
 
 if [ ! -e "${COMPLAINT_STAMP}" ]
 then
-    touch -c -t 201001010000 "${COMPLAINT_STAMP}"
+    touch -t 201001010000 "${COMPLAINT_STAMP}"
 fi
 
 if [ ! -f "${BACKUP_STAMP}" ]
@@ -30,8 +31,8 @@ then
     exit 1
 fi
 
-if [ \( $(date +%s -r "${BACKUP_STAMP}" ) -lt $(date +%s --date="7 days ago") \) -a \
-     \( $(date +%s -r "${COMPLAINT_STAMP}" ) -lt $(date +%s --date="6 days ago") \) ]
+if [ \( "$(date +%s -r "${BACKUP_STAMP}" )" -lt "$(date +%s --date="7 days ago")" \) -a \
+     \( "$(date +%s -r "${COMPLAINT_STAMP}" )" -lt "$(date +%s --date="6 days ago")" \) ]
 then
     echo "Last restic backup is more than 7 days ago: $(date -r "${BACKUP_STAMP}" )"
     echo "(Will complain again in 6 days)"
