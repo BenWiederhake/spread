@@ -29,6 +29,10 @@ fi
 # echo $'#!/usr/bin/env python3\nimport sys\nprint(sys.argv)' > ~/bin/showargs
 #CMD_PREFIX='showargs'
 CMD_PREFIX=
+if command -v nice >/dev/null 2>&1
+then
+    CMD_PREFIX="nice ${CMD_PREFIX}"
+fi
 
 TAG_ARGS=""
 if [ -n "${RESTIC_USE_TAG}" ]
