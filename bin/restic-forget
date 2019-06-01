@@ -27,4 +27,11 @@ fi
 
 export RESTIC_REPOSITORY
 export RESTIC_PASSWORD
+echo restic forget ${DRY_RUN_OPTION} ${RESTIC_FORGET_OPTIONS}
 restic forget ${DRY_RUN_OPTION} ${RESTIC_FORGET_OPTIONS}
+
+if [ -n "${DRY_RUN_OPTION}" ]
+then
+    echo
+    echo "Use $0 $1 '--no-dry-run' to actually prune."
+fi
