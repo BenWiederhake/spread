@@ -105,12 +105,12 @@ else
     NEXT_SUBSET=1
 fi
 
-${CMD_PREFIX} restic check ${QUIET} --read-data-subset="${NEXT_SUBSET}/${RESTIC_READ_SUBSET_FRACTION}"
-
-if [ -z "${CMD_PREFIX}" ]
-then
-    echo "${NEXT_SUBSET}" > "${RESTIC_CONFIG_DIR}/last-subset.txt"
-fi
+#${CMD_PREFIX} restic check ${QUIET} --read-data-subset="${NEXT_SUBSET}/${RESTIC_READ_SUBSET_FRACTION}"
+#
+#if [ -z "${CMD_PREFIX}" ]
+#then
+#    echo "${NEXT_SUBSET}" > "${RESTIC_CONFIG_DIR}/last-subset.txt"
+#fi
 
 
 # == Un-press the dead man's switch ==
