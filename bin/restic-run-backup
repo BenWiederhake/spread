@@ -47,12 +47,24 @@ fi
 
 # == Check connectivity ==
 
-if ! timeout 10s sftp -b /dev/null ${RESTIC_ACCOUNT} 2> /dev/null
+if echo "ls writable/.this_is_backup-${RESTIC_REPOSITORY_USER}_writable" \
+    | timeout 10s sftp -b- ${RESTIC_ACCOUNT} 2> /dev/null
 then
-    # Hmm.  The machine appears to be offline, or have any other problem.
+    # Everything is good.
+    if [ -n "${VERBOSE}" ]
+    then
+        echo "Repository seems healthy."
+    fi
+else
+    # Hmm.  The machine appears to be offline, or have any other problem,
+    # maybe the backup mount isn't there?
     # If this happens too often, the watchdogs (on each machine) will notice
     # that '.last_backup_success' hasn't been updated in a while,
     # and send a warning mail.
+    if [ -n "${VERBOSE}" ]
+    then
+        echo "sftp failed."
+    fi
     exit 0
 fi
 
