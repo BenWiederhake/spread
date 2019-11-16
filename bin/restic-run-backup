@@ -33,19 +33,15 @@ if command -v nice >/dev/null 2>&1
 then
     CMD_PREFIX="nice ${CMD_PREFIX}"
 fi
+if command -v ionice >/dev/null 2>&1
+then
+    CMD_PREFIX="ionice ${CMD_PREFIX}"
+fi
 
 TAG_ARGS=""
 if [ -n "${RESTIC_USE_TAG}" ]
 then
     TAG_ARGS="--tag ${RESTIC_USE_TAG}"
-fi
-
-
-# == Create files as necessary ==
-
-if [ ! -d "${RESTIC_CONFIG_DIR}" ]
-then
-    mkdir -p "${RESTIC_CONFIG_DIR}"
 fi
 
 
@@ -67,7 +63,7 @@ export RESTIC_REPOSITORY
 export RESTIC_PASSWORD
 ${CMD_PREFIX} restic snapshots ${QUIET} --json > "${RESTIC_CONFIG_DIR}/previous-snapshots.json"
 
-if [ "${USER}" = "root" ]
+if [ "${USER}" = "root" ] && command -v smartctl >/dev/null 2>&1
 then
     for sdx in $(find /dev -maxdepth 1 -name 'sd?' -printf '%f\n')
     do
@@ -105,6 +101,8 @@ else
     NEXT_SUBSET=1
 fi
 
+# FIXME: `check` is waaay too slow.  Disable that feature for now.
+# See https://github.com/restic/restic/issues/2284
 #${CMD_PREFIX} restic check ${QUIET} --read-data-subset="${NEXT_SUBSET}/${RESTIC_READ_SUBSET_FRACTION}"
 #
 #if [ -z "${CMD_PREFIX}" ]
