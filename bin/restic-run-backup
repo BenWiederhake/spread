@@ -48,7 +48,7 @@ fi
 # == Check connectivity ==
 
 if echo "ls writable/.this_is_backup-${RESTIC_REPOSITORY_USER}_writable" \
-    | timeout 10s sftp -b- ${RESTIC_ACCOUNT} 2> /dev/null
+    | timeout 10s sftp -b- ${RESTIC_ACCOUNT} > /dev/null 2> /dev/null
 then
     # Everything is good.
     if [ -n "${VERBOSE}" ]
