@@ -1,0 +1,41 @@
+#!/bin/sh
+
+set -e
+
+
+# == Configuration ==
+
+if [ $# -ne 2 ] ; then echo "Must supply profile, e.g. 'default', and file/dir to restore" ; exit 1 ; fi
+PROFILE_NAME="$1"
+shift
+RESTIC_CONFIG_DIR="${HOME}/.config/restic-run/${PROFILE_NAME}"
+if [ ! -d "${RESTIC_CONFIG_DIR}" ] ; then echo "No such profile \"${PROFILE_NAME}\"." ; exit 1 ; fi
+. "${RESTIC_CONFIG_DIR}/params"
+
+# No 'quiet' mode.
+
+# If in doubt, this may help you fix space- and IFS-related issues:
+# echo $'#!/usr/bin/env python3\nimport sys\nprint(sys.argv)' > ~/bin/showargs
+#CMD_PREFIX='showargs'
+CMD_PREFIX=
+if command -v nice >/dev/null 2>&1
+then
+    CMD_PREFIX="nice ${CMD_PREFIX}"
+fi
+if command -v ionice >/dev/null 2>&1
+then
+    CMD_PREFIX="ionice ${CMD_PREFIX}"
+fi
+
+TAG_ARGS=""
+if [ -n "${RESTIC_USE_TAG}" ]
+then
+    TAG_ARGS="--tag ${RESTIC_USE_TAG}"
+fi
+
+
+# == Do the restore ==
+
+export RESTIC_REPOSITORY
+export RESTIC_PASSWORD
+${CMD_PREFIX} restic restore ${TAG_ARGS} --include "$(realpath "$2")" --target / latest
