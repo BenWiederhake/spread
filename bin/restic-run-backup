@@ -74,7 +74,7 @@ fi
 export RESTIC_REPOSITORY
 export RESTIC_PASSWORD
 ${CMD_PREFIX} restic snapshots ${QUIET} --group-by host,paths,tags --last --json \
-    > "${RESTIC_CONFIG_DIR}/previous-snapshots.json"
+    > "${RESTIC_CONFIG_DIR}/previous-snapshot.json"
 
 if [ "${USER}" = "root" ] && command -v smartctl >/dev/null 2>&1
 then
