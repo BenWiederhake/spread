@@ -5,7 +5,7 @@
 I want to deploy five very similar restic clients, and had to come up with a
 way to deploy, configure, "run" (cron) and monitor these backups.
 
-Then I went totally crazy and made sure that you can use these scripts, too.
+Then I went totally crazy and made sure that *you* can use these scripts, too.
 
 Note that these scripts are purely optional.  Nothing about the repository
 is changed in any way, so `restic -r …` still works.  However, they do make it
@@ -40,7 +40,7 @@ You need to install restic in one way or another.  See their [installation page]
 
 `restic-run` uses `sftp` to test connectivity.
 
-I highly recommend `lftp` to do such things as determine repository size, delete snapshots, etc.  However, it's not strictly necessary.
+I highly recommend `lftp` to do such things as determine repository size, delete repositories, etc.  However, it's not strictly necessary.
 
 ### `restic-run` itself
 
@@ -51,7 +51,7 @@ Maybe `/usr/local/bin/`, maybe `~/bin/`, whatever you like.
 You *do* need to create a new profile.  For example, the profile "default" will reside in `~/.config/restic-run/default/`.
 You can either copy the folder `profile-template/` by hand, or just run `create-restic-profile.sh PROFILE_NAME`.
 
-Finally, fill in the details in `params` of your profile.
+Finally, fill in the details in `params` of your profile using your favorite text editor.
 
 For extra security, ask the server admin to provide an initial "known_hosts" file.
 
@@ -60,7 +60,7 @@ For extra security, ask the server admin to provide an initial "known_hosts" fil
 After creating a profile, you're good to go.
 
 All the commands take a profile name as first argument, and read all the details from there.
-This way, the password is only stored in a single, user-only readable location, and revealed on the process list.
+This way, the password is only stored in a single, user-only readable location, and not revealed on the process list.
 
 ### Creating a repository
 
@@ -68,12 +68,12 @@ This way, the password is only stored in a single, user-only readable location, 
 
 ### Not overwhelming your server
 
-Pointing restic to an extremely large directory is scary, if the server space is limited, and you're not sure whether the exception list is reasonable.  I'm going to run with the example of my home directory.
+Pointing restic to an extremely large directory is scary, if the server space is limited and you're not sure whether the exception list is reasonable.  I'm going to run with the example of my home directory.
 
 So here's how I go about it:
 
 1. Tell restic to backup your entire: `realpath "${HOME}" >> files-and-dirs.lst`
-2. Except everything in it: `find "$(realpath "${HOME}")" -mindepth 1 -maxdepth 1 -type d ! -name '.config' -printf '%p\n' >> exclude.lst`
+2. Except *everything* in it: `find "$(realpath "${HOME}")" -mindepth 1 -maxdepth 1 -type d ! -name '.config' -printf '%p\n' >> exclude.lst`
 3. Run a backup to see whether it really only backed up small files at your home root and the configuration: `restic-run-backup default`
 4. Successively examine folders and remove them from `exclude.lst`
 
@@ -88,18 +88,18 @@ that's still plenty of time to make a filesystem race likely.
 
 Personally, I deal with this using the "profile" concept:
 - The "default" profile to cover most of my home directory, specifically all the small (< 2 GiB), fast-changing stuff like my workspace, browser settings, mails; and:
-- The "large" profile to cover the rest of my home directory, specifically all the large, slow-changing stuff like music, camera folder, data collections.
+- The "large" profile to cover the rest of my home directory, specifically all the large, slow-changing stuff like music, camera folder, data collections, archives.
 
 This way, the "default" profile runs in a rather fast, near-atomic fashion, and I can probably deal with the fallout easily.
 Most importantly, rescanning the large stuff can be done separately at a different time.
 
 ### Things that should go on your crontab
 
-Make a backup, if the server is up: `restic-run-backup default`
+Make a backup (no-op if server is down): `restic-run-backup default`
 
 Check that the last backup wasn't too long ago: `restic-check-age default`
 
-For example, here are my (future?) crontab entries:
+For example, here are my crontab entries:
 ```
 19-59/20 * * * * /usr/local/bin/restic-run-backup default
 16 6 * * * /usr/local/bin/restic-check-age default
@@ -128,6 +128,23 @@ Remove old snapshots, and prune repository:
 Careful, this is I/O heavy, as the entire repository is walked!
 `$ restic-forget default`
 
+Mount restic using FUSE:
+`$ restic-heimdal default mount /media/alice/mnt/`
+(Runs in foreground, Ctrl-C to terminate.
+You should open a new terminal to run to following commands.)
+
+Determine unnecessary bloat:
+```
+$ cd /media/alice/mnt/
+$ restic-ls worklaptop-alice 2020-08-07T15\:22\:06+02\:00/
+$ restic-ls worklaptop-alice 2020-08-25T15\:22\:07+02\:00/
+$ cd /tmp
+$ restic-diff worklaptop-alice_2020-08-07T15\:22\:06+02\:00/.lsl.sorted  worklaptop-alice_2020-08-25T15\:22\:07+02\:00/.lsl.sorted
+```
+The last command then shows you what seems to be causing most of the space consumption.
+The output isn't nice, and also not exact, but it suffices for my purposes.
+*PLEASE* build a better tool! This is something that restic itself should support!
+
 ### Details on removing old snapshots
 
 The retention policy is written in `params`.  A sane default is given as a start.
@@ -140,17 +157,14 @@ By default, `forget` groups snapshots by their set of paths, and does not consid
 Note that this may take a long time, and may rewrite a lot of the repository.
 You better have a stable, fast connection, and enough storage space.
 
-### Run advanced restic commands
-
-Mount snapshots for easier inspection and restoration:
-`$ mkdir mnt-here && restic-heimdal default mount mnt-here`
-
-Many other niceties:
-`$ restic help`
+- NOTE: I haven't used this feature in a long time because restic used to have
+  some issues causing unreasonably long running times. This was recently fixed,
+  but I haven't looked into this yet. My old workaround was to switch to a new
+  repository and throwing the old repo away after a few months.
 
 ## How to make a new server
 
-You only really need sftp access to something with a large harddrive.
+You only really need sftp access to something with lots of storage space.
 
 I'm using an RPi with the sshd options `ChrootDirectory /path/to/that/drive` and `ForceCommand sftp-internal`.
 
@@ -164,16 +178,22 @@ I'm using an RPi with the sshd options `ChrootDirectory /path/to/that/drive` and
 
 ### Ehh, whatever
 
-- There is no way to easily figure out which files are "most responsible" for snapshot size, and what the snapshot size is anyway.  However, this is displayed immediately after a backup, so this information should be recoverable somehow.
+- There is no way to easily figure out which files are "most responsible" for snapshot size,
+  and what the snapshot size is anyway.  However, this is displayed immediately after a backup,
+  so this information should be recoverable somehow. Also, my scripts provide at
+  least *some* idea about what's happening.
 - There is no way to delete an entire repository.  However, `lftp` supports `rm -rf`, which has the same effect.
 - The password is moved via environment variables.  Don't go too crazy on the special characters.
 - Restore-Verification can only be done by the client, as it requires the password.  This has the unfortunate effect that `RESTIC_READ_SUBSET_FRACTION` needs to be large (so, technically, represent a small fraction of the repository).
+- `restic-run-backup` was intended to use `RESTIC_READ_SUBSET_FRACTION` in
+  order to verify the repository on every backup. In old versions, this causes
+  some unnecessarily large running time. This was fixed, but I couldn't update
+  yet to the newer versions, so I don't want to re-enable it yet.
 - If the client completely fails to start `restic-check-age` at all, the user might not notice.  On the other hand, in that case the device is probably crashed and burned anyway.
-- `init` does not automatically run sanity checks on the password.
+- `init` does not automatically run sanity checks on the password, neither to my scripts.
 
 ## TODOs
 
-- Deploy it at home and see how well it works
 - Host all my friends' backups
 - Convince everyone to host my backups
 
