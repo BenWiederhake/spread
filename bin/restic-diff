@@ -1,0 +1,18 @@
+#!/bin/sh
+
+set -e
+
+if [ "x$#" = "x2" ]; then
+    DIGITS="7"
+    echo "Guessing DIGITS=7"
+elif [ "x$#" = "x3" ]; then
+    DIGITS="$3"
+else
+    echo "USAGE: $0 <OLD_LSL> <NEW_LSL> [<DIGITS>]"
+    echo "For example: $0"
+    exit 1
+fi
+OLDLSL="$1"
+NEWLSL="$2"
+
+diff -u0 "${OLDLSL}" "${NEWLSL}" | grep -PC1 "[^0-9] [0-9]{${DIGITS}}" | less

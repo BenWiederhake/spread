@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+
+if [ "x$#" != "x2" ]; then
+    echo "USAGE: $0 <EXTRANAME> <SNAPSHOT>"
+    echo "For example: $0 worklaptop-alice 2020-08-07T15\:22\:06+02\:00/"
+    exit 1
+fi
+
+EXTRANAME="$1"
+SNAPSHOT="$(basename "$2")"
+OUTNAME="/tmp/${EXTRANAME}_${SNAPSHOT}.lsl.sorted"
+echo "Written to ${OUTNAME}"
+
+cd "$2"
+xargs -0a <(find -type f -print0) ls -l | sed -re 's,  +, ,g' | sort -k9 > "${OUTNAME}"
