@@ -66,6 +66,8 @@ This way, the password is only stored in a single, user-only readable location, 
 
 `$ restic-heimdal default init`
 
+(Replace "default" by your actual profile name.)
+
 ### Not overwhelming your server
 
 Pointing restic to an extremely large directory is scary, if the server space is limited and you're not sure whether the exception list is reasonable.  I'm going to run with the example of my home directory.
@@ -87,7 +89,7 @@ File access isn't atomic system-wide, and although restic runs in single-digit s
 that's still plenty of time to make a filesystem race likely.
 
 Personally, I deal with this using the "profile" concept:
-- The "default" profile to cover most of my home directory, specifically all the small (< 2 GiB), fast-changing stuff like my workspace, browser settings, mails; and:
+- The "default" profile to cover most of my home directory, specifically all the small (< 2 GiB), fast-changing stuff like my workspace, browser settings, mail; and:
 - The "large" profile to cover the rest of my home directory, specifically all the large, slow-changing stuff like music, camera folder, data collections, archives.
 
 This way, the "default" profile runs in a rather fast, near-atomic fashion, and I can probably deal with the fallout easily.
@@ -95,7 +97,7 @@ Most importantly, rescanning the large stuff can be done separately at a differe
 
 ### Things that should go on your crontab
 
-Make a backup (no-op if server is down): `restic-run-backup default`
+Make a backup (does a no-op if the server is down): `restic-run-backup default`
 
 Check that the last backup wasn't too long ago: `restic-check-age default`
 
@@ -108,6 +110,83 @@ For example, here are my crontab entries:
 ### Show the time of the last backup
 
 `$ restic-last-backup default`
+
+### Reduce size of a restic repo
+
+By default, `restic-forget` does a dry-run, and tells you what *would* happen:
+
+```console
+$ restic-forget default
+restic forget --dry-run -c --prune --group-by host,tags --keep-last 10 --keep-hourly 25 --keep-daily 8 --keep-weekly 6 --keep-monthly 13 --keep-yearly 50
+repository ed2aac02 opened successfully, password is correct
+Applying Policy: keep 10 latest, 25 hourly, 8 daily, 6 weekly, 13 monthly, 50 yearly snapshots
+keep 33 snapshots:
+ID        Time                 Host   Tags
+----------------------------------------------------------------
+15e8ea3b  2022-06-30 02:22:03  mymachine  snapshot-tag
+db1ea04f  2022-07-28 16:22:03  mymachine  snapshot-tag
+18911c29  2022-08-21 21:22:02  mymachine  snapshot-tag
+06ede37f  2022-08-31 18:22:03  mymachine  snapshot-tag
+36105386  2022-09-01 03:22:03  mymachine  snapshot-tag
+8a3bf933  2022-09-21 23:22:03  mymachine  snapshot-tag
+<… many more snapshots …>
+ec7bb3d1  2022-10-18 13:22:05  mymachine  snapshot-tag
+b8ef51e2  2022-10-18 14:22:03  mymachine  snapshot-tag
+----------------------------------------------------------------
+33 snapshots
+
+remove 207 snapshots:
+ID        Time                 Host   Tags
+----------------------------------------------------------------
+2047a085  2022-06-24 23:40:44  mymachine  snapshot-tag
+13634c8a  2022-06-25 00:22:03  mymachine  snapshot-tag
+<… many more snapshots …>
+----------------------------------------------------------------
+207 snapshots
+
+Would have removed the following snapshots:
+{00fe47f1 0370da23 05aa9e74 <… many more snapshots …> fdd49c11 ff0369f2 ffd3c298}
+
+207 snapshots have been removed, running prune
+loading indexes...
+loading all snapshots...
+finding data that is still in use for 33 snapshots
+[0:00] 100.00%  33 / 33 snapshots...
+searching used packs...
+collecting packs for deletion and repacking
+[0:08] 100.00%  2651 / 2651 packs processed...
+
+to repack:         15606 blobs / 1.165 GiB
+this removes:       7636 blobs / 1.105 GiB
+to delete:          5988 blobs / 3.106 GiB
+total prune:       13624 blobs / 4.212 GiB
+remaining:         30230 blobs / 6.381 GiB
+unused size after prune: 324.050 MiB (4.96% of remaining size)
+
+
+Use /usr/local/bin/restic-forget default '--no-dry-run' to actually prune.
+```
+
+As the output suggests, you can then run it again with the `--no-dry-run` option:
+
+```console
+$ restic-forget default --no-dry-run
+DANGER: Actually removing stuff.
+restic forget -c --prune --group-by host,tags --keep-last 10 --keep-hourly 25 --keep-daily 8 --keep-weekly 6 --keep-monthly 13 --keep-yearly 50
+repository ed2aac02 opened successfully, password is correct
+Applying Policy: keep 10 latest, 25 hourly, 8 daily, 6 weekly, 13 monthly, 50 yearly snapshots
+keep 33 snapshots:
+ID        Time                 Host   Tags
+----------------------------------------------------------------
+15e8ea3b  2022-06-30 02:22:03  mymachine  snapshot-tag
+<… etc. …>
+```
+
+Personally, I like doing a check that the repository is still consistent:
+
+`restic-heimdal default check --read-data-subset=10% --no-cache --verbose=2`
+
+Note that `restic-run-backup` already does an automatic check of the repository after every single backup. See `RESTIC_READ_SUBSET_PERCENTAGE` in your `params` file.
 
 ### Show which profiles exist
 
@@ -127,6 +206,7 @@ Restore single file:
 Remove old snapshots, and prune repository:
 Careful, this is I/O heavy, as the entire repository is walked!
 `$ restic-forget default`
+(See also above section.)
 
 Mount restic using FUSE:
 `$ restic-heimdal default mount /media/alice/mnt/`
@@ -157,11 +237,6 @@ By default, `forget` groups snapshots by their set of paths, and does not consid
 Note that this may take a long time, and may rewrite a lot of the repository.
 You better have a stable, fast connection, and enough storage space.
 
-- NOTE: I haven't used this feature in a long time because restic used to have
-  some issues causing unreasonably long running times. This was recently fixed,
-  but I haven't looked into this yet. My old workaround was to switch to a new
-  repository and throwing the old repo away after a few months.
-
 ## How to make a new server
 
 You only really need sftp access to something with lots of storage space.
@@ -174,7 +249,6 @@ I'm using an RPi with the sshd options `ChrootDirectory /path/to/that/drive` and
 
 - restic uses a LUKS-like distinction between Master Key and Key Slot.  This means that you can change the password without having to rewrite the entire repository.  It also means that if keyslot *and* password are leaked, an adversary can recover all snapshots – duh.  The unintuitive part is that this can happen in any order: If the attacker can first obtain the keyslot (i.e., `keys/81270d89846052b906f10a24fa14f9bbb8d2e98f18b9732d56f8dfa8e026aa0f`), and months later the password to it, then the attacker can decrypt the entire repository, *even* if the user tries to revoke the key.  So, keep your password safe.
 - No built-in redundancy.  A bit flip on the server in a block that is still in use could potentially destroy a large chunk of the backup.
-- `check` seems to use a lot of round trips instead of using the cache.
 
 ### Ehh, whatever
 
@@ -184,13 +258,9 @@ I'm using an RPi with the sshd options `ChrootDirectory /path/to/that/drive` and
   least *some* idea about what's happening.
 - There is no way to delete an entire repository.  However, `lftp` supports `rm -rf`, which has the same effect.
 - The password is moved via environment variables.  Don't go too crazy on the special characters.
-- Restore-Verification can only be done by the client, as it requires the password.  This has the unfortunate effect that `RESTIC_READ_SUBSET_FRACTION` needs to be large (so, technically, represent a small fraction of the repository).
-- `restic-run-backup` was intended to use `RESTIC_READ_SUBSET_FRACTION` in
-  order to verify the repository on every backup. In old versions, this causes
-  some unnecessarily large running time. This was fixed, but I couldn't update
-  yet to the newer versions, so I don't want to re-enable it yet.
+- Restore-Verification can only be done by the client, as it requires the password.  This has the unfortunate effect that `RESTIC_READ_SUBSET_PERCENTAGE` needs to be small.
 - If the client completely fails to start `restic-check-age` at all, the user might not notice.  On the other hand, in that case the device is probably crashed and burned anyway.
-- `init` does not automatically run sanity checks on the password, neither to my scripts.
+- `init` does not automatically run sanity checks on the password, neither do my scripts.
 
 ## TODOs
 
