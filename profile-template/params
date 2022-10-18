@@ -12,7 +12,10 @@ RESTIC_PASSWORD="1234"  # FIXME
 # '10000' would mean that from a repository of size 30G, restic-run-backup
 # verifies about 3M after each successful backup.  Note that some metadata
 # is always read and verified.
-RESTIC_READ_SUBSET_FRACTION=10000
+# DEPRECATED: Use "RESTIC_READ_SUBSET_PERCENTAGE" instead.
+#RESTIC_READ_SUBSET_FRACTION=10000
+
+RESTIC_READ_SUBSET_PERCENTAGE="1%"
 
 # Replace "restic-server" by whatever server you use.
 # For extra security, ask the server admin to provide an initial "known_hosts" file.

@@ -97,31 +97,10 @@ fi
 
 # == Verify consistency of the repository ==
 
-LAST_SUBSET="$(cat ${RESTIC_CONFIG_DIR}/last-subset.txt 2>/dev/null || true)"
-
-if [ "${LAST_SUBSET}" -ge 1 ] 2> /dev/null
+if [ -n "${RESTIC_READ_SUBSET_PERCENTAGE}" ]
 then
-    # Go to the next
-    NEXT_SUBSET="$(expr ${LAST_SUBSET} + 1)"
-    if [ "${NEXT_SUBSET}" -gt "${RESTIC_READ_SUBSET_FRACTION}" ]
-    then
-        NEXT_SUBSET=1
-    fi
-else
-    echo "${RESTIC_CONFIG_DIR}/last-subset.txt missing or did not exist."
-    echo "Initializing."
-    echo "999999999" > "${RESTIC_CONFIG_DIR}/last-subset.txt"
-    NEXT_SUBSET=1
+    ${CMD_PREFIX} restic check ${QUIET} --read-data-subset="${RESTIC_READ_SUBSET_PERCENTAGE}"
 fi
-
-# FIXME: `check` is waaay too slow.  Disable that feature for now.
-# See https://github.com/restic/restic/issues/2284
-#${CMD_PREFIX} restic check ${QUIET} --read-data-subset="${NEXT_SUBSET}/${RESTIC_READ_SUBSET_FRACTION}"
-#
-#if [ -z "${CMD_PREFIX}" ]
-#then
-#    echo "${NEXT_SUBSET}" > "${RESTIC_CONFIG_DIR}/last-subset.txt"
-#fi
 
 
 # == Un-press the dead man's switch ==
