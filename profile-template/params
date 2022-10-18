@@ -29,4 +29,4 @@ RESTIC_USE_TAG=sn-your_repository_name_here
 
 # Options for "restic-forget".  Note that "--dry-run" is automatically added
 # by restic-forget unless "--no-dry-run" is used.
-RESTIC_FORGET_OPTIONS="-c --prune --group-by host,tags --keep-last 10 --keep-hourly 25 --keep-daily 8 --keep-weekly 6 --keep-monthly 13 --keep-yearly 50"
+RESTIC_FORGET_OPTIONS="-c --prune --group-by host,tags --keep-last 20 --keep-hourly 49 --keep-daily 15 --keep-weekly 10 --keep-monthly 25 --keep-yearly 50"
