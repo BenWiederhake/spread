@@ -1,11 +1,13 @@
 # restic-run
 
-> Wrappers that make restic more cronable
+[Restic](https://restic.net/) is a nice backup tool that I use, however it's not very easy to automate.
+This repository contains a few scripts that make it easy to deploy, automate,
+and manage restic setups on a handful of machines.
 
 I want to deploy five very similar restic clients, and had to come up with a
 way to deploy, configure, "run" (cron) and monitor these backups.
 
-Then I went totally crazy and made sure that *you* can use these scripts, too.
+You can use these scripts, too!
 
 Note that these scripts are purely optional.  Nothing about the repository
 is changed in any way, so `restic -r …` still works.  However, they do make it
