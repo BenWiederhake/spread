@@ -99,7 +99,13 @@ fi
 
 if [ -n "${RESTIC_READ_SUBSET_PERCENTAGE}" ]
 then
-    ${CMD_PREFIX} restic check ${QUIET} --read-data-subset="${RESTIC_READ_SUBSET_PERCENTAGE}"
+    # --read-data-subset takes care of the blobs. But what about the trees?
+    # Conflict:
+    # - On the one hand, we very much want to check all trees.
+    # - On the other hand, this reads a surprisingly large amount of data, taking 7 minutes(!) for my home directory.
+    # The solution is "--with-cache", which surprisingly does NOT use the cache for the --read-subset part.
+    # See https://forum.restic.net/t/how-to-speed-up-tiny-incremental-checks/5905/3
+    ${CMD_PREFIX} restic check ${QUIET} --with-cache --read-data-subset="${RESTIC_READ_SUBSET_PERCENTAGE}"
 fi
 
 
