@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e
+
+for i in $(restic-profiles); do
+    echo "$(restic-last-backup $i) $i"
+done
+echo "$(date) (now)"
